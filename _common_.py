@@ -21,6 +21,15 @@ SERVER_AK_MESSAGE = "_ACK_"
 MESSAGE_HISTORY_UPDATE_REQUEST = "_MESSAGE_HISTORY_UPDATE_REQUEST_"
 MESSAGE_HISTORY_UPDATE_COMPLETE = "_MESSAGE_HISTORY_UPDATE_COMPLETE_"
 
+# message for clients to exit the chat room
+CLIENT_EXIT_MESSAGE = "exit"
+
+# default chatroom welcome message
+CHATROOM_WELCOME_MESSAGE = "Welcome to the chatroom!"
+
+# default message for non-clients entering server
+CHATROOM_NON_CLIENT_MESSAGE = "You are not permitted to join this chatroom!"
+
 PORT = 5050 # generic port to use
 # automatically get host IP address
 # use this to run server on
