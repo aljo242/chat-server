@@ -5,9 +5,9 @@ from _common_ import *
 import logging
 
 class Server:
-    def __init__(self, clientIDs: list, cmdLineInput: bool = True):
+    def __init__(self, clientIDs: list, logName: str = "server.log"):
         # init logging
-        setup_logger("serverlLog", "server.log")
+        setup_logger("serverlLog", logName)
         self.logger = logging.getLogger("serverlLog")
         
         self.clientIDs = clientIDs
@@ -23,9 +23,8 @@ class Server:
         # threading lock to ensure atomic access
         self.lock = threading.Lock()
         
-        if cmdLineInput: 
-            self.inputHandler = threading.Thread(target = self.handleInput, daemon = False)
-            self.inputHandler.start()
+        self.inputHandler = threading.Thread(target = self.handleInput, daemon = False)
+        self.inputHandler.start()
 
     def handleClient(self, connection, address):
         self.logger.debug(f"[NEW CONNECITON]: {address}")
@@ -124,15 +123,22 @@ class Server:
     # use to exit the 
     def run(self):
         print(f"Type \"{SERVER_EXIT_MESSAGE}\" to shut server down")
+        message = ""
         while True:
-            message = input()
+            try:
+                message = input()
+            except:
+                continue
+            
             if message == SERVER_EXIT_MESSAGE:
                 self.shutdown()
                 break
+        
 
     def shutdown(self):
         self.logger.debug(f"Admin shutting down server...")
         self.server.close()
+        exit()
 
     def handleInput(self):
         print(f"Initializing server at port: {PORT}, and IPv4: {SERVER}....")
@@ -158,8 +164,8 @@ class Server:
         print("Shutting server down...")
         self.server.close()
 
-def runServer():
-    server = Server([1, 2, 3])
+def runServer(clientIDs: list = [1, 2, 3], logName: str = "server.log"):
+    server = Server([1, 2, 3], logName)
     server.run()
 
 if __name__ == "__main__":

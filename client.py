@@ -6,9 +6,12 @@ import logging
 import time
 
 class Client:
-    def __init__(self, ID: int, name: str):
+    def __init__(self, ID: int, name: str, filename: str = ""):
         # init logging
-        setup_logger(f"{name}Log", f"{name}.log")
+        if filename == "":
+            filename = f"{name}.log"
+        self.filename = filename
+        setup_logger(f"{name}Log", self.filename)
         self.logger = logging.getLogger(f"{name}Log")
 
 
@@ -103,11 +106,10 @@ class Client:
             print(message)
 
     # debug log message history to show output that client would see
-    def logMessageHistory(self, name: str):
-        filename = f"{name}.log"
+    def logMessageHistory(self):
 
         self.logger.debug(f"MESSAGE HISTORY SEEN BY: {self.name}")
-        print(f"logging message history for {self.name} to {filename}")
+        print(f"logging message history for {self.name} to {self.filename}")
         for message in self.messageHistory:
             self.logger.debug(message)
 

@@ -1,6 +1,10 @@
 # common values for server and client functionality
 import logging
 import socket
+import os
+
+PWD = os.getcwd()
+print(PWD)
 
 # header begins each message
 # is 64 bytes
@@ -33,7 +37,7 @@ CHATROOM_WELCOME_MESSAGE = "Welcome to the chatroom!"
 # default message for non-clients entering server
 CHATROOM_NON_CLIENT_MESSAGE = "You are not permitted to join this chatroom!"
 
-PORT = 5050 # generic port to use
+PORT = 5000 # generic port to use
 # automatically get host IP address
 # use this to run server on
 SERVER = socket.gethostbyname(socket.gethostname())
