@@ -135,7 +135,9 @@ class Server:
         self.server.close()
 
     def handleInput(self):
+        print(f"Initializing server at port: {PORT}, and IPv4: {SERVER}....")
         self.logger.debug(f"Initializing server at port: {PORT}, and IPv4: {SERVER}....")
+        print("Listening for connections...")
         self.server.listen() # listen for new connections
         self.logger.debug("Listening for connections...")
         while True: # run until quit

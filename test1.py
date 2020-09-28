@@ -3,7 +3,7 @@ from client import *
 import time
 import threading
 
-clientIDs = [1, 2, 3]
+clientIDs = [1, 2]
 
 def alexClient():
     alex = Client(1, "Alex")
