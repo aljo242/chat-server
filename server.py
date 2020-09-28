@@ -5,16 +5,16 @@ from _common_ import *
 import logging
 
 class Server:
-    def __init__(self, clientIDs: list):
+    def __init__(self, clientIDs: list, cmdLineInput: bool = True):
         # init logging
-        logging.basicConfig(filename = "server.log", filemode = 'w',
-            format='%(name)s - %(levelname)s - %(message)s',
-            level=logging.DEBUG)
+        setup_logger("serverlLog", "server.log")
+        self.logger = logging.getLogger("serverlLog")
         
         self.clientIDs = clientIDs
         self.messageHistory = [CHATROOM_WELCOME_MESSAGE]
         self.nonClientMessage = [CHATROOM_NON_CLIENT_MESSAGE]
         self.connections = {}
+        self.kill = False
 
         # create connection
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -22,9 +22,13 @@ class Server:
 
         # threading lock to ensure atomic access
         self.lock = threading.Lock()
+        
+        if cmdLineInput: 
+            self.inputHandler = threading.Thread(target = self.handleInput, daemon = False)
+            self.inputHandler.start()
 
     def handleClient(self, connection, address):
-        logging.debug(f"[NEW CONNECITON]: {address}")
+        self.logger.debug(f"[NEW CONNECITON]: {address}")
         recievedID = False
         ID = 0
 
@@ -32,7 +36,7 @@ class Server:
             message = self.recv(connection)
 
             # print all recieved messages to log
-            logging.debug(f"[ID: {ID}] message = {message}")
+            self.logger.debug(f"[ID: {ID}] message = {message}")
 
             # clients are required to first send their ID to server
             if not recievedID:
@@ -48,7 +52,7 @@ class Server:
                 continue
 
             elif message == DISCONNECT_MESSAGE:
-                logging.debug(f"[{ID}] DISCONNECTING")
+                self.logger.debug(f"[{ID}] DISCONNECTING")
 
                 # remove from our connections list, so we won't broadcast 
                 # message to it after disconnection
@@ -69,7 +73,7 @@ class Server:
 
                     self.dispatchMessage(ID, message)
                 
-        logging.debug("exiting thread handler...")
+        self.logger.debug("exiting thread handler...")
 
     # update message history 
     # all clients recieve message history when connecting to server
@@ -83,7 +87,7 @@ class Server:
         # send client the number of messages we are going to send,
         # then send the actual message
         if len(self.messageHistory) != 0:
-            logging.debug(f"Sending message history of length: {len(messagesToSend)}")
+            self.logger.debug(f"Sending message history of length: {len(messagesToSend)}")
             self.send(connection, str(len(messagesToSend)))
 
             for message in messagesToSend:
@@ -101,7 +105,7 @@ class Server:
     def recvAK(self, connection):
         ak = connection.recv(MAX_MESSAGE_BYTES).decode(DECODE_FORMAT)
         if ak != SERVER_AK_MESSAGE:
-            logging.debug("Error getting AK")
+            self.logger.debug("Error getting AK")
 
     def recv(self, connection):
         message = connection.recv(MAX_MESSAGE_BYTES).decode(DECODE_FORMAT)
@@ -111,26 +115,46 @@ class Server:
     def dispatchMessage(self, originID: int, message: str):
         for ID in self.connections.keys():
             if ID != originID:
-                logging.debug(f"sending from {originID} to {ID}")
+                self.logger.debug(f"sending from {originID} to {ID}")
 
                 connection = self.connections[ID]
                 self.sendNoAK(connection, message)
-    
-    def start(self):
+
+    # thread to be run handling user input
+    # use to exit the 
+    def run(self):
+        print(f"Type \"{SERVER_EXIT_MESSAGE}\" to shut server down")
+        while True:
+            message = input()
+            if message == SERVER_EXIT_MESSAGE:
+                self.shutdown()
+                break
+
+    def shutdown(self):
+        self.logger.debug(f"Admin shutting down server...")
+        self.server.close()
+
+    def handleInput(self):
+        self.logger.debug(f"Initializing server at port: {PORT}, and IPv4: {SERVER}....")
         self.server.listen() # listen for new connections
-        logging.debug("Listening for connections...")
+        self.logger.debug("Listening for connections...")
         while True: # run until quit
+
             # block until new connection
-            connection, address = self.server.accept()
+            # 
+            try:
+                connection, address = self.server.accept()
+            except socket.error:
+                break
+
             thread = threading.Thread(target = self.handleClient, args = (connection, address))
             thread.start()
             # print totalThreads - 1 since 
             # master thread handling dispatching new connections
-            logging.debug(f"[ACTIVE CONNECTIONS]: {threading.activeCount() - 1}")
-
-    def run(self):
-        logging.debug(f"Initializing server at port: {PORT}, and IPv4: {SERVER}....")
-        self.start()
+            self.logger.debug(f"[ACTIVE THREADS]: {threading.activeCount()}")
+        
+        print("Shutting server down...")
+        self.server.close()
 
 def runServer():
     server = Server([1, 2, 3])

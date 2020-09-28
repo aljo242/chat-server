@@ -2,10 +2,16 @@ import socket
 from _common_ import *
 import argparse
 import threading
+import logging
 import time
 
 class Client:
     def __init__(self, ID: int, name: str):
+        # init logging
+        setup_logger(f"{name}Log", f"{name}.log")
+        self.logger = logging.getLogger(f"{name}Log")
+
+
         self.clientIDs = []
         self.name = name
         self.ID = ID
@@ -22,9 +28,9 @@ class Client:
         self.send(str(self.ID))
         self.updateMessageHistory()
 
+        
         reciever = threading.Thread(target = self.recieveLoop, daemon = True)
         reciever.start()
-        self.run()
 
     # recieving loop to be executed as a thread
     def recieveLoop(self):
@@ -35,6 +41,7 @@ class Client:
             message = self.recv(self.connection)
             if message != SERVER_AK_MESSAGE:   # filter messages to be printed to client
                 print(message)
+                self.messageHistory.append(message)
 
     # main loop which takes user input and sends to the server
     # recieve loop runs in parallel as a thread
@@ -66,12 +73,14 @@ class Client:
             time.sleep(.05) # simulate latency
 
     def sendWithName(self, message: str):
+        self.messageHistory.append(message)
         if message == CLIENT_EXIT_MESSAGE:
             self.disconnect()
         else:
             message = f"[{self.name}]: " + message
             self.send(message)
     
+
     def recv(self, connection):
         message = connection.recv(MAX_MESSAGE_BYTES).decode(DECODE_FORMAT)
         return message
@@ -87,8 +96,20 @@ class Client:
         for _ in range(numMessages):
             self.messageHistory.append(self.recvAndAK(self.connection))
 
+        self.printMessageHistory()
+
+    def printMessageHistory(self):
         for message in self.messageHistory:
             print(message)
+
+    # debug log message history to show output that client would see
+    def logMessageHistory(self, name: str):
+        filename = f"{name}.log"
+
+        self.logger.debug(f"MESSAGE HISTORY SEEN BY: {self.name}")
+        print(f"logging message history for {self.name} to {filename}")
+        for message in self.messageHistory:
+            self.logger.debug(message)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -98,3 +119,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     myClient = Client(args.id, args.name)
+    myClient.run()

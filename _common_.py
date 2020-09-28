@@ -1,4 +1,5 @@
 # common values for server and client functionality
+import logging
 import socket
 
 # header begins each message
@@ -23,6 +24,8 @@ MESSAGE_HISTORY_UPDATE_COMPLETE = "_MESSAGE_HISTORY_UPDATE_COMPLETE_"
 
 # message for clients to exit the chat room
 CLIENT_EXIT_MESSAGE = "exit"
+# message for cmd line on server side to shut down
+SERVER_EXIT_MESSAGE = "exit"
 
 # default chatroom welcome message
 CHATROOM_WELCOME_MESSAGE = "Welcome to the chatroom!"
@@ -35,3 +38,13 @@ PORT = 5050 # generic port to use
 # use this to run server on
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDRESS = (SERVER, PORT)
+
+
+def setup_logger(logger_name, log_file, level=logging.DEBUG):
+    l = logging.getLogger(logger_name)
+    formatter = logging.Formatter('%(asctime)s : %(message)s')
+    fileHandler = logging.FileHandler(log_file, mode='w')
+    fileHandler.setFormatter(formatter)
+
+    l.setLevel(level)
+    l.addHandler(fileHandler)
