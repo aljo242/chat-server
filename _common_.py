@@ -12,6 +12,8 @@ print(PWD)
 MESSAGE_HEADER_BYTES = 8
 MAX_MESSAGE_BYTES = 1024
 
+MAX_SERVER_RUNTIME_S = 20
+
 # format to decode/encode messages into bytes
 DECODE_FORMAT = "utf-8"
 ENCODE_FORMAT = "utf-8"

@@ -124,11 +124,16 @@ class Server:
     def run(self):
         print(f"Type \"{SERVER_EXIT_MESSAGE}\" to shut server down")
         message = ""
-        while True:
-            try:
-                message = input()
-            except:
-                continue
+        startTime = time.time()
+        while self.kill != True:
+            elapsedTime = time.time() - startTime
+            if elapsedTime < MAX_SERVER_RUNTIME_S: # kill server process 
+                try:
+                    message = input()
+                except:
+                    continue
+            else:
+                message = SERVER_EXIT_MESSAGE
             
             if message == SERVER_EXIT_MESSAGE:
                 self.shutdown()
@@ -136,6 +141,7 @@ class Server:
         
 
     def shutdown(self):
+        self.kill = True
         self.logger.debug(f"Admin shutting down server...")
         self.server.close()
         exit()

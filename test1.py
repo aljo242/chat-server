@@ -10,11 +10,15 @@ clientIDs = [1, 2]
 def alexClient():
     alex = Client(1, "Alex", os.path.join(PWD, "alex_test1.log"))
     alex.sendWithName("Whats up!")
-    time.sleep(10)
+    time.sleep(5)
     alex.sendWithName("Hey, got to go, bye!")
 
     alex.sendWithName("exit")
-    time.sleep(1)
+    time.sleep(10)
+
+    alex = Client(1, "Alex", os.path.join(PWD, "alex_test1.log"))
+    alex.sendWithName("exit")
+
     alex.logMessageHistory() # debug log message history to show output that client would see
 
 def sarahClient():
@@ -36,6 +40,5 @@ if __name__ == "__main__":
     time.sleep(1)
     alexThread.start()
     sarahThread.start()
-    time.sleep(20)
-    sys.exit()
+
 
